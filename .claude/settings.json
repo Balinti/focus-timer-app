@@ -1,0 +1,1 @@
+{"permissions":{"allow":["bash(npm *)","bash(npx *)","bash(git *)","bash(gh *)","bash(cd *)","bash(mkdir *)","bash(cat *)","bash(echo *)","bash(rm -rf node_modules)","bash(rm -rf .next)","write(**)","read(**)","edit(**)"],"deny":["bash(rm -rf /)","bash(rm -rf ~)","bash(sudo *)","bash(chmod *)","bash(chown *)"]}}
