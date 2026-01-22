@@ -87,19 +87,42 @@ export default function FocusSessionPage() {
     };
   }, [timerState]);
 
-  // Handle timer completion
-  useEffect(() => {
-    if (timerState === 'completed' && currentSession) {
-      handleSessionEnd(false);
-    }
-  }, [timerState]);
-
   const getDuration = useCallback(() => {
     if (selectedDuration === 'custom') {
       return customMinutes * 60;
     }
     return TIMER_DURATIONS[selectedDuration];
   }, [selectedDuration, customMinutes]);
+
+  const handleSessionEnd = useCallback((interrupted: boolean) => {
+    if (!currentSession || !sessionStartTimeRef.current) return;
+
+    const now = new Date();
+    const actualDuration = Math.floor((now.getTime() - sessionStartTimeRef.current.getTime()) / 1000);
+
+    updateSession(currentSession.id, {
+      ended_at: now.toISOString(),
+      duration_sec: actualDuration,
+      interrupted,
+    });
+
+    setCurrentSession({
+      ...currentSession,
+      ended_at: now.toISOString(),
+      duration_sec: actualDuration,
+      interrupted,
+    });
+
+    setTimerState('idle');
+    setShowShipNoteModal(true);
+  }, [currentSession]);
+
+  // Handle timer completion
+  useEffect(() => {
+    if (timerState === 'completed' && currentSession) {
+      handleSessionEnd(false);
+    }
+  }, [timerState, currentSession, handleSessionEnd]);
 
   const startSession = useCallback(() => {
     if (!taskTitle.trim()) {
@@ -139,30 +162,7 @@ export default function FocusSessionPage() {
     if (currentSession) {
       handleSessionEnd(true);
     }
-  }, [currentSession]);
-
-  const handleSessionEnd = useCallback((interrupted: boolean) => {
-    if (!currentSession || !sessionStartTimeRef.current) return;
-
-    const now = new Date();
-    const actualDuration = Math.floor((now.getTime() - sessionStartTimeRef.current.getTime()) / 1000);
-
-    updateSession(currentSession.id, {
-      ended_at: now.toISOString(),
-      duration_sec: actualDuration,
-      interrupted,
-    });
-
-    setCurrentSession({
-      ...currentSession,
-      ended_at: now.toISOString(),
-      duration_sec: actualDuration,
-      interrupted,
-    });
-
-    setTimerState('idle');
-    setShowShipNoteModal(true);
-  }, [currentSession]);
+  }, [currentSession, handleSessionEnd]);
 
   const saveShipNote = useCallback(() => {
     if (shipNote.trim().length < 10) {
